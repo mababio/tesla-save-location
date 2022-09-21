@@ -7,7 +7,7 @@ steps:
   - function-tesla-save-location
   - --region=us-east4
   - --service-account=service-account-wyze-function@ensure-dev-zone.iam.gserviceaccount.com
-  - --hello_pubsub
+  - --entry-point=hello_pubsub
   - --source=.
   - --trigger-http
   - --runtime=python38
