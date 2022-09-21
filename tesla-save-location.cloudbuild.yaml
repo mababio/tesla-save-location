@@ -8,7 +8,7 @@ steps:
   - --region=us-east4
   - --service-account=service-account-wyze-function@ensure-dev-zone.iam.gserviceaccount.com
   - --entry-point=hello_pubsub
-  - --source=.
+  - --source=src
   - --trigger-topic=tesla-gps-save-mongodb
   - --runtime=python38
 options:
