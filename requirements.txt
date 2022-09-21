@@ -1,0 +1,9 @@
+# Function dependencies, for example:
+# package>=version
+pymongo[tls,srv]
+google-cloud-logging==3.2.2
+pytz
+retry==0.9.2
+urllib3==1.26.12
+
+

@@ -1,0 +1,15 @@
+steps:
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  args:
+  - gcloud
+  - functions
+  - deploy
+  - function-tesla-save-location
+  - --region=us-east4
+  - --service-account=service-account-wyze-function@ensure-dev-zone.iam.gserviceaccount.com
+  - --hello_pubsub
+  - --source=tesla-save-location
+  - --trigger-http
+  - --runtime=python38
+options:
+  logging: CLOUD_LOGGING_ONLY
