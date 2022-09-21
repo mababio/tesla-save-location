@@ -2,28 +2,34 @@ from datetime import datetime
 from pytz import timezone
 from retry import retry
 import notification as chanify
-import pymongo
-from pymongo.server_api import ServerApi
 import requests
 from logs import logger
 import notification
 
-class tesla_stationary:
 
-    def __init__(self,tesla_database):
+class TeslaStationary:
+
+    def __init__(self, tesla_database):
         self.url_tesla_set_temp = "https://us-east4-ensure-dev-zone.cloudfunctions.net/function-tesla-set-temp"
-        notification.send_push_notification('mababio3')
         self.url_tesla_info = "https://us-east4-ensure-dev-zone.cloudfunctions.net/tesla-info"
-        self.db  = tesla_database
+        self.db = tesla_database
+
+    @retry(logger=logger, delay=10, tries=3)
+    def is_climate_on(self):
+        return requests.get(self.url_tesla_info).json()['climate_state']['is_climate_on']
 
     @retry(logger=logger, delay=10, tries=3)
     def set_temp(self, temp='22.7778'):
-        try:
-            param = {"temp": temp}
-            return requests.post(self.url_tesla_set_temp, json=param)
-        except Exception as e:
-            logger.warning('Issue calling ' + str(self.url_tesla_set_temp) + ': ' + str(e))
-            raise
+
+        if self.is_climate_on():
+            try:
+                param = {"temp": temp}
+                return requests.post(self.url_tesla_set_temp, json=param)
+            except Exception as e:
+                logger.warning('Issue calling ' + str(self.url_tesla_set_temp) + ': ' + str(e))
+                raise
+        else:
+            notification.send_push_notification('Climate is on already, no need to turn on')
 
     @retry(logger=logger, delay=10, tries=3)
     def is_battery_good(self):
@@ -65,3 +71,12 @@ class tesla_stationary:
             return True
         else:
             return False
+
+
+if __name__ == "__main__":
+    import pymongo
+    from pymongo.server_api import ServerApi
+REMOVED    tesla_database = client['tesla']
+    obj = TeslaStationary(tesla_database)
+    print(obj.is_climate_on())
+

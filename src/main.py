@@ -5,7 +5,7 @@ from logs import logger
 import json
 from datetime import datetime
 from pytz import timezone
-from tesla_stationary import tesla_stationary
+from tesla_stationary import TeslaStationary
 import notification
 
 REMOVED
@@ -25,18 +25,16 @@ def save_location(lat, lon):
             logger.info('save_location: updating latlong to dbmongo ')
         else:
             logger.info('save_location: Current lat lon values are the same as dbmongo values')
-            tesla_stationary_obj = tesla_stationary(tesla_database)
+            tesla_stationary_obj = TeslaStationary(tesla_database)
             if tesla_stationary_obj.is_tesla_parked_long():
+                #if
                 # tesla_stationary_obj.set_temp()
                 notification.send_push_notification('Would of turn the air on!!!')
             else:
-                logger.info("save_location::::: Not parked or not park long enough" )
-
+                logger.info("save_location::::: Not parked or not park long enough")
     except Exception as e:
         logger.error("save_location::: Issue saving location")
         raise
-
-
 
 
 def hello_pubsub(event, context):
@@ -44,8 +42,8 @@ def hello_pubsub(event, context):
         pubsub_message = base64.b64decode(event['data']).decode('utf-8')
         lat = json.loads(pubsub_message)['lat']
         lon = json.loads(pubsub_message)['lon']
-        save_location(lat,lon)
+        save_location(lat, lon)
         logger.info("hello_pubsub::::: Attempting to save lat lon to mongdb " + str(lat) + str(lon))
     except Exception as e:
         logger.error('ERROR ------> ' + str(e))
-    
+
