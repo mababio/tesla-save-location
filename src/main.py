@@ -28,7 +28,7 @@ def save_location(lat, lon):
             tesla_stationary_obj = TeslaStationary(tesla_database)
             if tesla_stationary_obj.is_tesla_parked_long():
                 #if
-                # tesla_stationary_obj.set_temp()
+                tesla_stationary_obj.set_temp()
                 notification.send_push_notification('Would of turn the air on!!!')
             else:
                 logger.info("save_location::::: Not parked or not park long enough")
