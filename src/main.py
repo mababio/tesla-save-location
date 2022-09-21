@@ -14,7 +14,7 @@ tesla_database = client['tesla']
 
 def save_location(lat, lon):
     try:
-        return_saved_location = tesla_database['tesla_location'].find_one({'_id':'current'})
+        return_saved_location = tesla_database['tesla_location'].find_one({'_id': 'current'})
         lat_current_saved = return_saved_location['lat']
         lon_current_saved = return_saved_location['lon']
         if lat != lat_current_saved or lon != lon_current_saved:
@@ -27,7 +27,8 @@ def save_location(lat, lon):
             logger.info('save_location: Current lat lon values are the same as dbmongo values')
             tesla_stationary_obj = tesla_stationary(tesla_database)
             if tesla_stationary_obj.is_tesla_parked_long():
-                tesla_stationary_obj.set_temp()
+                # tesla_stationary_obj.set_temp()
+                notification.send_push_notification('Would of turn the air on!!!')
             else:
                 logger.info("save_location::::: Not parked or not park long enough" )
 
