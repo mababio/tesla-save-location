@@ -9,7 +9,7 @@ steps:
   - --service-account=service-account-wyze-function@ensure-dev-zone.iam.gserviceaccount.com
   - --entry-point=hello_pubsub
   - --source=.
-  - --trigger-http
+  - --trigger-topic=tesla-gps-save-mongodb
   - --runtime=python38
 options:
   logging: CLOUD_LOGGING_ONLY
