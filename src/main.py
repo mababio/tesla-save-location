@@ -31,7 +31,6 @@ def save_location(lat, lon):
             if tesla_stationary_obj.is_tesla_parked_long() and not tesla_stationary_obj.is_climate_turned_on_via_automation():
                 logger.info('Cloud function that absorbed pubsub:::: calling set_temp')
                 tesla_stationary_obj.set_temp()
-                notification.send_push_notification('Turned Air on')
             else:
                 logger.info("save_location::::: Not parked or not park long enough")
     except Exception as e:

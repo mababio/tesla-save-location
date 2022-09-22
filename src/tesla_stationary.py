@@ -45,6 +45,7 @@ class TeslaStationary:
                 param = {"temp": temp}
                 notification.send_push_notification('set_temp:::: calling set_temp cloud function')
                 requests.post(self.url_tesla_set_temp, json=param)
+                notification.send_push_notification('Turned air on')
                 self.climate_turned_on_via_automation()
             except Exception as e:
                 logger.warning('set_temp::::: Issue calling ' + str(self.url_tesla_set_temp) + ': ' + str(e))
