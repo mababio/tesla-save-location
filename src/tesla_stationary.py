@@ -19,9 +19,8 @@ class TeslaStationary:
         return requests.get(self.url_tesla_info).json()['climate_state']['is_climate_on']
 
     @retry(logger=logger, delay=10, tries=3)
-    def set_temp(self, temp='22.7778'):
-
-        if self.is_climate_on():
+    def set_temp(self, temp='21.1111'):
+        if not self.is_climate_on():
             try:
                 param = {"temp": temp}
                 return requests.post(self.url_tesla_set_temp, json=param)
