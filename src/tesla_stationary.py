@@ -55,6 +55,7 @@ class TeslaStationary:
         try:
             if self.__get_db_latlon_age() > 15 and self.is_climate_on() and self.is_climate_turned_on_via_automation:
                 self.set_climate_off()
+                notification.send_push_notification('Attempting to turn climate off')
         except Exception as e:
             notification.send_push_notification('set_temp::::: Issue turning off climate after tesla parked for 15 mins')
 
