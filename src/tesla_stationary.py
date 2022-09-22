@@ -45,6 +45,7 @@ class TeslaStationary:
         if not self.is_climate_on():
             try:
                 param = {"temp": temp}
+                notification.send_push_notification('set_temp:::: calling set_temp cloud function')
                 requests.post(self.url_tesla_set_temp, json=param)
                 self.climate_turned_on_via_automation()
             except Exception as e:
