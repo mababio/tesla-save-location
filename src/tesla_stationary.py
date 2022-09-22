@@ -12,23 +12,51 @@ class TeslaStationary:
     def __init__(self, tesla_database):
         self.url_tesla_set_temp = "https://us-east4-ensure-dev-zone.cloudfunctions.net/function-tesla-set-temp"
         self.url_tesla_info = "https://us-east4-ensure-dev-zone.cloudfunctions.net/tesla-info"
+        self.url_tesla_climate_off = "https://us-east4-ensure-dev-zone.cloudfunctions.net/function-tesla-turn-temp-off"
         self.db = tesla_database
 
     @retry(logger=logger, delay=10, tries=3)
     def is_climate_on(self):
         return requests.get(self.url_tesla_info).json()['climate_state']['is_climate_on']
 
+    def set_climate_off(self):
+        return requests.get(self.url_tesla_climate_off).json()['set'] == 'True'
+        #https://us-east4-ensure-dev-zone.cloudfunctions.net/function-tesla-turn-temp-off
+
+    def is_climate_turned_on_via_automation(self):
+        climate_state = self.db['tesla_climate_status'].find_one({'_id':'enum'})['climate_state']
+        if climate_state == 'climate_automation':
+            return True
+        else:
+            False
+
+    def climate_turned_off_via_automation(self):
+        myquery = {"_id": 'enum'}
+        new_values = {"$set": {"climate_state": 'at_user_well'}}
+        self.db['tesla_climate_status'].update_one(myquery, new_values)
+
+    def climate_turned_on_via_automation(self):
+        myquery = {"_id": 'enum'}
+        new_values = {"$set": {"climate_state": 'climate_automation'}}
+        self.db['tesla_climate_status'].update_one(myquery, new_values)
+
     @retry(logger=logger, delay=10, tries=3)
     def set_temp(self, temp='21.1111'):
         if not self.is_climate_on():
             try:
                 param = {"temp": temp}
-                return requests.post(self.url_tesla_set_temp, json=param)
+                requests.post(self.url_tesla_set_temp, json=param)
+                self.climate_turned_on_via_automation()
             except Exception as e:
-                logger.warning('Issue calling ' + str(self.url_tesla_set_temp) + ': ' + str(e))
+                logger.warning('set_temp::::: Issue calling ' + str(self.url_tesla_set_temp) + ': ' + str(e))
                 raise
         else:
             notification.send_push_notification('Climate is on already, no need to turn on')
+        try:
+            if self.__get_db_latlon_age() > 15 and self.is_climate_on() and self.is_climate_turned_on_via_automation:
+                self.set_climate_off()
+        except Exception as e:
+            notification.send_push_notification('set_temp::::: Issue turning off climate after tesla parked for 15 mins')
 
     @retry(logger=logger, delay=10, tries=3)
     def is_battery_good(self):

@@ -10,6 +10,7 @@ import notification
 
 REMOVED
 tesla_database = client['tesla']
+tesla_stationary_obj = TeslaStationary(tesla_database)
 
 
 def save_location(lat, lon):
@@ -22,12 +23,12 @@ def save_location(lat, lon):
             est = timezone('US/Eastern')
             new_values = {"$set": {"lat": lat, "lon": lon, "timestamp": str(datetime.now(est))}}
             tesla_database['tesla_location'].update_one(myquery, new_values)
+            if tesla_stationary_obj.is_climate_turned_on_via_automation():
+                tesla_stationary_obj.climate_turned_off_via_automation()
             logger.info('save_location: updating latlong to dbmongo ')
         else:
             logger.info('save_location: Current lat lon values are the same as dbmongo values')
-            tesla_stationary_obj = TeslaStationary(tesla_database)
-            if tesla_stationary_obj.is_tesla_parked_long():
-                #if
+            if tesla_stationary_obj.is_tesla_parked_long() and not tesla_stationary_obj.is_climate_turned_on_via_automation():
                 tesla_stationary_obj.set_temp()
                 notification.send_push_notification('Would of turn the air on!!!')
             else:
