@@ -1,7 +1,6 @@
 from datetime import datetime
 from pytz import timezone
 from retry import retry
-import notification as chanify
 import requests
 from logs import logger
 import notification
@@ -21,7 +20,6 @@ class TeslaStationary:
 
     def set_climate_off(self):
         return requests.get(self.url_tesla_climate_off).json()['set'] == 'True'
-        #https://us-east4-ensure-dev-zone.cloudfunctions.net/function-tesla-turn-temp-off
 
     def is_climate_turned_on_via_automation(self):
         climate_state = self.db['tesla_climate_status'].find_one({'_id':'enum'})['climate_state']

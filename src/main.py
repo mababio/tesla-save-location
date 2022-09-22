@@ -26,15 +26,12 @@ def save_location(lat, lon):
             if tesla_stationary_obj.is_climate_turned_on_via_automation():
                 tesla_stationary_obj.climate_turned_off_via_automation()
             logger.info('save_location: updating latlong to dbmongo ')
-            notification.send_push_notification('Cloud function that absorbed pubsub:::: updating latlong to dbmongo')
         else:
             logger.info('save_location: Current lat lon values are the same as dbmongo values')
-            notification.send_push_notification('Cloud function that absorbed pubsub:::: '
-                                                'Current lat lon values are the same as dbmongo values')
             if tesla_stationary_obj.is_tesla_parked_long() and not tesla_stationary_obj.is_climate_turned_on_via_automation():
-                notification.send_push_notification('Cloud function that absorbed pubsub:::: calling set_temp')
+                logger.info('Cloud function that absorbed pubsub:::: calling set_temp')
                 tesla_stationary_obj.set_temp()
-                notification.send_push_notification('Would of turn the air on!!!')
+                notification.send_push_notification('Turned Air on')
             else:
                 logger.info("save_location::::: Not parked or not park long enough")
     except Exception as e:
@@ -51,4 +48,8 @@ def hello_pubsub(event, context):
         logger.info("hello_pubsub::::: Attempting to save lat lon to mongdb " + str(lat) + str(lon))
     except Exception as e:
         logger.error('ERROR ------> ' + str(e))
+
+#
+# if __name__ == "__main__":
+#     save_location("40.670042", "-74.096599")
 
