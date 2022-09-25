@@ -13,4 +13,4 @@ REMOVED
 
 
 if __name__ == "__main__":
-    send_sms( 'testing')
+    send_push_notification('testing')

@@ -53,7 +53,7 @@ class TeslaStationary:
         else:
             notification.send_push_notification('Climate is on already, no need to turn on')
         try:
-            if self.__get_db_latlon_age() > 15 and self.is_climate_on() and self.is_climate_turned_on_via_automation:
+            if self.__get_db_latlon_age() > 7 and self.is_climate_on() and self.is_climate_turned_on_via_automation:
                 self.set_climate_off()
                 notification.send_push_notification('Attempting to turn climate off')
         except Exception as e:
@@ -76,7 +76,7 @@ class TeslaStationary:
             logger.warning('Issue calling ' + str(self.url_tesla_info) + ': ' + str(e))
 
     @retry(logger=logger, delay=10, tries=3)
-    def is_parked(self,length=5):
+    def is_parked(self, length=2):
         shift_state = requests.get(self.url_tesla_info).json()['drive_state']['shift_state']
         db_latlon_age_mins = self.__get_db_latlon_age()
         return True if shift_state is None and db_latlon_age_mins > length else False
