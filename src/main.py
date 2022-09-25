@@ -7,6 +7,7 @@ from datetime import datetime
 from pytz import timezone
 from tesla_stationary import TeslaStationary
 import notification
+from config import settings
 
 REMOVED
 tesla_database = client['tesla']
@@ -31,8 +32,17 @@ def save_location(lat, lon):
             if tesla_stationary_obj.is_tesla_parked_long() and not tesla_stationary_obj.is_climate_turned_on_via_automation():
                 logger.info('Cloud function that absorbed pubsub:::: calling set_temp')
                 tesla_stationary_obj.set_temp()
-            else:
-                logger.info("save_location::::: Not parked or not park long enough")
+            elif tesla_stationary_obj.is_climate_turned_on_via_automation() \
+                    and tesla_stationary_obj.get_db_latlon_age() > settings['production']['max_parked_min']:
+                try:
+                    tesla_stationary_obj.set_climate_off()
+                    notification.send_push_notification('Attempting to turn climate off')
+                except Exception as e:
+                    notification.send_push_notification('set_climate_off::::: Issue turning off climate after tesla'
+                                                        'parked for long time' + str(e))
+                    logger.error('set_climate_off::::: Issue turning off climate after tesla '
+                                 'parked for long time' + str(e))
+                raise
     except Exception as e:
         logger.error("save_location::: Issue saving location")
         raise

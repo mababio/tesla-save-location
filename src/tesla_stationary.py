@@ -4,6 +4,7 @@ from retry import retry
 import requests
 from logs import logger
 import notification
+from config import settings
 
 
 class TeslaStationary:
@@ -52,18 +53,18 @@ class TeslaStationary:
                 raise
         else:
             notification.send_push_notification('Climate is on already, no need to turn on')
-        try:
-            if self.__get_db_latlon_age() > 7 and self.is_climate_on() and self.is_climate_turned_on_via_automation:
-                self.set_climate_off()
-                notification.send_push_notification('Attempting to turn climate off')
-        except Exception as e:
-            notification.send_push_notification('set_temp::::: Issue turning off climate after tesla parked for 15 mins')
+        # try:
+        #     # if self.get_db_latlon_age() > settings['production']['max_parked_min'] and self.is_climate_on() and self.is_climate_turned_on_via_automation:
+        #     #     self.set_climate_off()
+        #     #     notification.send_push_notification('Attempting to turn climate off')
+        # except Exception as e:
+        #     notification.send_push_notification('set_temp::::: Issue turning off climate after tesla parked for 15 mins')
 
     @retry(logger=logger, delay=10, tries=3)
     def is_battery_good(self):
         try:
             battery_range = requests.get(self.url_tesla_info).json()['charge_state']['battery_range']
-            return True if battery_range > 100 else False
+            return True if battery_range > settings['production']['battery_min'] else False
         except Exception as e:
             logger.warning('Issue calling ' + str(self.url_tesla_info) + ': ' + str(e))
             raise
@@ -76,14 +77,14 @@ class TeslaStationary:
             logger.warning('Issue calling ' + str(self.url_tesla_info) + ': ' + str(e))
 
     @retry(logger=logger, delay=10, tries=3)
-    def is_parked(self, length=2):
+    def is_parked(self, length=settings['production']['min_parked_min']):
         shift_state = requests.get(self.url_tesla_info).json()['drive_state']['shift_state']
-        db_latlon_age_mins = self.__get_db_latlon_age()
+        db_latlon_age_mins = self.get_db_latlon_age()
         return True if shift_state is None and db_latlon_age_mins > length else False
 
-    def __get_db_latlon_age(self):
+    def get_db_latlon_age(self):
         est = timezone('US/Eastern')
-        db_latlon_timestamp_est = self.db['tesla_location'].find_one({'_id':'current'})['timestamp'].split('.')[0]
+        db_latlon_timestamp_est = self.db['tesla_location'].find_one({'_id': 'current'})['timestamp'].split('.')[0]
         db_latlon_timestamp_est_str = str(db_latlon_timestamp_est)
         db_latlon_timestamp_datetime_obj = datetime.strptime(db_latlon_timestamp_est_str, "%Y-%m-%d %H:%M:%S")
 
@@ -102,9 +103,13 @@ class TeslaStationary:
 
 
 if __name__ == "__main__":
-    import pymongo
-    from pymongo.server_api import ServerApi
-REMOVED    tesla_database = client['tesla']
-    obj = TeslaStationary(tesla_database)
-    print(obj.is_climate_on())
+    # import pymongo
+    # from pymongo.server_api import ServerApi
+REMOVED    # tesla_database = client['tesla']
+    # obj = TeslaStationary(tesla_database)
+    # print(obj.is_climate_on())
+    # print(obj.get_db_latlon_age())
+    # print(obj.is_tesla_parked_long())
+    # print(obj.is_climate_turned_on_via_automation())
+    print(settings['production']['max_parked_min'])
 
