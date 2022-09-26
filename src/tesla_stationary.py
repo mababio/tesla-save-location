@@ -5,6 +5,7 @@ import requests
 from logs import logger
 import notification
 from config import settings
+import math
 
 
 class TeslaStationary:
@@ -30,7 +31,7 @@ class TeslaStationary:
         return (fahrenheit - 32) * 5.0 / 9.0
 
     def celsius_to_fahrenheit(self, celsius):
-        return (celsius * 1.8) + 32
+        return math.ceil((celsius * 1.8) + 32)
 
     def ideal_tesla_temp(self):
         outside_temp_f = self.celsius_to_fahrenheit(self.get_climate_outside())
@@ -121,9 +122,9 @@ if __name__ == "__main__":
     from pymongo.server_api import ServerApi
 REMOVED    tesla_database = client['tesla']
     obj = TeslaStationary(tesla_database)
-    print(obj.celsius_to_fahrenheit(obj.ideal_tesla_temp()))
-    obj.set_temp(75)
-    print(obj.is_climate_on())
+    print(obj.celsius_to_fahrenheit(obj.get_climate_outside()))
+   # obj.set_temp(75)
+   # print(obj.is_climate_on())
     # print(obj.get_db_latlon_age())
     # print(obj.is_tesla_parked_long())
     # print(obj.is_climate_turned_on_via_automation())
