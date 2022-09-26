@@ -143,7 +143,7 @@ REMOVED    tesla_database = client['tesla']
     print(obj.celsius_to_fahrenheit(obj.get_climate_outside()))
    # obj.set_temp(75)
    # print(obj.is_climate_on())
-    # print(obj.get_db_latlon_age())
+    print(obj.get_db_latlon_age())
     # print(obj.is_tesla_parked_long())
     # print(obj.is_climate_turned_on_via_automation())
    # print(settings['production']['max_parked_min'])
