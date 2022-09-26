@@ -10,9 +10,9 @@ from config import settings
 class TeslaStationary:
 
     def __init__(self, tesla_database):
-        self.url_tesla_set_temp = "https://us-east4-ensure-dev-zone.cloudfunctions.net/function-tesla-set-temp"
-        self.url_tesla_info = "https://us-east4-ensure-dev-zone.cloudfunctions.net/tesla-info"
-        self.url_tesla_climate_off = "https://us-east4-ensure-dev-zone.cloudfunctions.net/function-tesla-turn-temp-off"
+        self.url_tesla_set_temp = settings['production']['URL']['tesla_set_temp']
+        self.url_tesla_info = settings['production']['URL']['tesla_info']
+        self.url_tesla_climate_off = settings['production']['URL']['tesla_climate_off']
         self.db = tesla_database
 
     @retry(logger=logger, delay=10, tries=3)
@@ -24,10 +24,7 @@ class TeslaStationary:
 
     def is_climate_turned_on_via_automation(self):
         climate_state = self.db['tesla_climate_status'].find_one({'_id':'enum'})['climate_state']
-        if climate_state == 'climate_automation':
-            return True
-        else:
-            False
+        return True if climate_state == 'climate_automation' else False
 
     def climate_turned_off_via_automation(self):
         myquery = {"_id": 'enum'}
@@ -53,12 +50,6 @@ class TeslaStationary:
                 raise
         else:
             notification.send_push_notification('Climate is on already, no need to turn on')
-        # try:
-        #     # if self.get_db_latlon_age() > settings['production']['max_parked_min'] and self.is_climate_on() and self.is_climate_turned_on_via_automation:
-        #     #     self.set_climate_off()
-        #     #     notification.send_push_notification('Attempting to turn climate off')
-        # except Exception as e:
-        #     notification.send_push_notification('set_temp::::: Issue turning off climate after tesla parked for 15 mins')
 
     @retry(logger=logger, delay=10, tries=3)
     def is_battery_good(self):
@@ -103,11 +94,11 @@ class TeslaStationary:
 
 
 if __name__ == "__main__":
-    # import pymongo
-    # from pymongo.server_api import ServerApi
-REMOVED    # tesla_database = client['tesla']
-    # obj = TeslaStationary(tesla_database)
-    # print(obj.is_climate_on())
+    import pymongo
+    from pymongo.server_api import ServerApi
+REMOVED    tesla_database = client['tesla']
+    obj = TeslaStationary(tesla_database)
+    #print(obj.is_climate_on())
     # print(obj.get_db_latlon_age())
     # print(obj.is_tesla_parked_long())
     # print(obj.is_climate_turned_on_via_automation())
