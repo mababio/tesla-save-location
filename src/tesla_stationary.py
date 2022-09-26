@@ -19,8 +19,27 @@ class TeslaStationary:
     def is_climate_on(self):
         return requests.get(self.url_tesla_info).json()['climate_state']['is_climate_on']
 
+    @retry(logger=logger, delay=10, tries=3)
+    def get_climate_outside(self):
+        return requests.get(self.url_tesla_info).json()['climate_state']['outside_temp']
+
     def set_climate_off(self):
         return requests.get(self.url_tesla_climate_off).json()['set'] == 'True'
+
+    def __fahrenheit_to_celsius(self, fahrenheit):
+        return (fahrenheit - 32) * 5.0 / 9.0
+
+    def celsius_to_fahrenheit(self, celsius):
+        return (celsius * 1.8) + 32
+
+    def ideal_tesla_temp(self):
+        outside_temp_f = self.celsius_to_fahrenheit(self.get_climate_outside())
+        if outside_temp_f <= 50:
+            return self.__fahrenheit_to_celsius(73)
+        elif outside_temp_f >= 77:
+            return self.__fahrenheit_to_celsius(71)
+        else:
+            return None
 
     def is_climate_turned_on_via_automation(self):
         climate_state = self.db['tesla_climate_status'].find_one({'_id':'enum'})['climate_state']
@@ -37,8 +56,12 @@ class TeslaStationary:
         self.db['tesla_climate_status'].update_one(myquery, new_values)
 
     @retry(logger=logger, delay=10, tries=3)
-    def set_temp(self, temp='21.1111'):
-        if not self.is_climate_on():
+    def set_temp(self, temp=None):
+        if temp is None:
+            temp = self.ideal_tesla_temp()
+        else:
+            temp = self.__fahrenheit_to_celsius(temp)
+        if not self.is_climate_on() and temp is not None:
             try:
                 param = {"temp": temp}
                 notification.send_push_notification('set_temp:::: calling set_temp cloud function')
@@ -98,9 +121,11 @@ if __name__ == "__main__":
     from pymongo.server_api import ServerApi
 REMOVED    tesla_database = client['tesla']
     obj = TeslaStationary(tesla_database)
-    #print(obj.is_climate_on())
+    print(obj.celsius_to_fahrenheit(obj.ideal_tesla_temp()))
+    obj.set_temp(75)
+    print(obj.is_climate_on())
     # print(obj.get_db_latlon_age())
     # print(obj.is_tesla_parked_long())
     # print(obj.is_climate_turned_on_via_automation())
-    print(settings['production']['max_parked_min'])
+   # print(settings['production']['max_parked_min'])
 
