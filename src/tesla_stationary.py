@@ -62,7 +62,7 @@ class TeslaStationary:
             temp = self.ideal_tesla_temp()
         else:
             temp = self.__fahrenheit_to_celsius(temp)
-        if not self.is_climate_on() and temp is not None:
+        if not self.is_climate_on():
             try:
                 param = {"temp": temp}
                 notification.send_push_notification('set_temp:::: calling set_temp cloud function')
