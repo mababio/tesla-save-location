@@ -14,29 +14,34 @@ tesla_database = client['tesla']
 tesla_stationary_obj = TeslaStationary(tesla_database)
 
 
+def update_gps_saved(lat,lon):
+    myquery = {"_id": 'current'}
+    est = timezone('US/Eastern')
+    new_values = {"$set": {"lat": lat, "lon": lon, "timestamp": str(datetime.now(est))}}
+    tesla_database['tesla_location'].update_one(myquery, new_values)
+
+
 def save_location(lat, lon):
     try:
         return_saved_location = tesla_database['tesla_location'].find_one({'_id': 'current'})
         lat_current_saved = return_saved_location['lat']
         lon_current_saved = return_saved_location['lon']
         if lat != lat_current_saved or lon != lon_current_saved:
-            myquery = {"_id": 'current'}
-            est = timezone('US/Eastern')
-            new_values = {"$set": {"lat": lat, "lon": lon, "timestamp": str(datetime.now(est))}}
-            tesla_database['tesla_location'].update_one(myquery, new_values)
+            update_gps_saved(lat, lon)
             if tesla_stationary_obj.is_climate_turned_on_via_automation():
-                tesla_stationary_obj.climate_turned_off_via_automation()
+                tesla_stationary_obj.climate_reset_for_automation()
             logger.info('save_location: updating latlong to dbmongo ')
         else:
             logger.info('save_location: Current lat lon values are the same as dbmongo values')
-            if tesla_stationary_obj.is_tesla_parked_long() and not tesla_stationary_obj.is_climate_turned_on_via_automation():
+            if tesla_stationary_obj.is_tesla_parked_long() and not tesla_stationary_obj.is_climate_turned_on_via_automation() \
+                    and not tesla_stationary_obj.climate_turned_on_via_automation_before():
                 logger.info('Cloud function that absorbed pubsub:::: calling set_temp')
                 tesla_stationary_obj.set_temp()
             elif tesla_stationary_obj.is_climate_turned_on_via_automation() \
                     and tesla_stationary_obj.get_db_latlon_age() > settings['production']['max_parked_min']:
                 try:
                     tesla_stationary_obj.set_climate_off()
-                   # tesla_stationary_obj.climate_turned_off_via_automation()
+                    tesla_stationary_obj.climate_turned_off_via_automation()
                     notification.send_push_notification('Attempting to turn climate off')
                 except Exception as e:
                     notification.send_push_notification('set_climate_off::::: Issue turning off climate after tesla'

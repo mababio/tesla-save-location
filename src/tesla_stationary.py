@@ -51,10 +51,27 @@ class TeslaStationary:
         new_values = {"$set": {"climate_state": 'at_user_well'}}
         self.db['tesla_climate_status'].update_one(myquery, new_values)
 
+    def climate_turned_on_via_automation_before(self):
+        climate_turned_on_before = self.db['tesla_climate_status'].find_one({'_id':'enum'})['climate_turned_on_before']
+        return True if climate_turned_on_before == 'True' else False
+
+    def climate_reset_for_automation(self):
+        myquery = {"_id": 'enum'}
+        new_values = {"$set": {"climate_state": 'at_user_well'}}
+        self.db['tesla_climate_status'].update_one(myquery, new_values)
+        myquery = {"_id": 'enum'}
+        new_values = {"$set": {"climate_turned_on_before": 'False'}}
+        self.db['tesla_climate_status'].update_one(myquery, new_values)
+
     def climate_turned_on_via_automation(self):
         myquery = {"_id": 'enum'}
         new_values = {"$set": {"climate_state": 'climate_automation'}}
         self.db['tesla_climate_status'].update_one(myquery, new_values)
+        myquery = {"_id": 'enum'}
+        new_values = {"$set": {"climate_turned_on_before": 'True'}}
+        self.db['tesla_climate_status'].update_one(myquery, new_values)
+
+
 
     @retry(logger=logger, delay=10, tries=3)
     def set_temp(self, temp=None):
@@ -115,6 +132,7 @@ class TeslaStationary:
             return True
         else:
             return False
+
 
 
 if __name__ == "__main__":
