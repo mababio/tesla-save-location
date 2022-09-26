@@ -45,7 +45,7 @@ def save_location(lat, lon):
                                  'parked for long time' + str(e))
                 raise
     except Exception as e:
-        logger.error("save_location::: Issue saving location")
+        logger.error("save_location::: Issue saving location" + str(e))
         raise
 
 
