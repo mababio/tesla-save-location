@@ -28,8 +28,8 @@ def save_location(lat, lon):
         lon_current_saved = return_saved_location['lon']
         if lat != lat_current_saved or lon != lon_current_saved:
             update_gps_saved(lat, lon)
-            #if tesla_stationary_obj.is_climate_turned_on_via_automation():
-            tesla_stationary_obj.climate_reset_for_automation()
+            if tesla_stationary_obj.climate_turned_on_via_automation_before():
+                tesla_stationary_obj.climate_reset_for_automation()
             logger.info('save_location: updating latlong to dbmongo ')
         else:
             logger.info('save_location: Current lat lon values are the same as dbmongo values')
