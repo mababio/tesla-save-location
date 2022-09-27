@@ -26,12 +26,7 @@ def save_location(lat, lon):
         return_saved_location = tesla_database['tesla_location'].find_one({'_id': 'current'})
         lat_current_saved = return_saved_location['lat']
         lon_current_saved = return_saved_location['lon']
-        if lat != lat_current_saved or lon != lon_current_saved:
-            update_gps_saved(lat, lon)
-            if tesla_stationary_obj.climate_turned_on_via_automation_before():
-                tesla_stationary_obj.climate_reset_for_automation()
-            logger.info('save_location: updating latlong to dbmongo ')
-        else:
+        if lat == lat_current_saved and lon == lon_current_saved:
             logger.info('save_location: Current lat lon values are the same as dbmongo values')
             if tesla_stationary_obj.is_tesla_parked_long() and not tesla_stationary_obj.is_climate_turned_on_via_automation() \
                     and not tesla_stationary_obj.climate_turned_on_via_automation_before():
@@ -49,6 +44,13 @@ def save_location(lat, lon):
                     logger.error('set_climate_off::::: Issue turning off climate after tesla '
                                  'parked for long time' + str(e))
                 raise
+        else:
+            update_gps_saved(lat, lon)
+            if not tesla_stationary_obj.climate_turned_on_via_automation_before():
+                pass
+            else:
+                tesla_stationary_obj.climate_reset_for_automation()
+            logger.info('save_location: updating latlong to dbmongo ')
     except Exception as e:
         logger.error("save_location::: Issue saving location" + str(e))
         raise
