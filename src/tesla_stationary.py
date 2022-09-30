@@ -79,18 +79,23 @@ class TeslaStationary:
             temp = self.ideal_tesla_temp()
         else:
             temp = self.__fahrenheit_to_celsius(temp)
-        if not self.is_climate_on():
-            try:
-                param = {"temp": temp}
-                notification.send_push_notification('set_temp:::: calling set_temp cloud function')
-                requests.post(self.url_tesla_set_temp, json=param)
-                notification.send_push_notification('Turned air on')
-                self.climate_turned_on_via_automation()
-            except Exception as e:
-                logger.warning('set_temp::::: Issue calling ' + str(self.url_tesla_set_temp) + ': ' + str(e))
-                raise
+        if temp is None:
+            return False
         else:
-            notification.send_push_notification('Climate is on already, no need to turn on')
+            if not self.is_climate_on():
+                try:
+                    param = {"temp": temp}
+                    notification.send_push_notification('set_temp:::: calling set_temp cloud function')
+                    requests.post(self.url_tesla_set_temp, json=param)
+                    notification.send_push_notification('Turned air on')
+                    self.climate_turned_on_via_automation()
+                    return True
+                except Exception as e:
+                    logger.warning('set_temp::::: Issue calling ' + str(self.url_tesla_set_temp) + ': ' + str(e))
+                    raise
+            else:
+                notification.send_push_notification('Climate is on already, no need to turn on')
+                return False
 
     @retry(logger=logger, delay=10, tries=3)
     def is_battery_good(self):
@@ -140,10 +145,10 @@ if __name__ == "__main__":
     from pymongo.server_api import ServerApi
 REMOVED    tesla_database = client['tesla']
     obj = TeslaStationary(tesla_database)
-    print(obj.celsius_to_fahrenheit(obj.get_climate_outside()))
+    print(obj.ideal_tesla_temp())
    # obj.set_temp(75)
    # print(obj.is_climate_on())
-    print(obj.get_db_latlon_age())
+   #  print(obj.get_db_latlon_age())
     # print(obj.is_tesla_parked_long())
     # print(obj.is_climate_turned_on_via_automation())
    # print(settings['production']['max_parked_min'])
