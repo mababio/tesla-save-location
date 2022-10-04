@@ -125,3 +125,4 @@ def test_is_tesla_home():
     tesla_db['tesla_location'].update_one({"_id": "current"}, {"$set": {"is_home": False}})
     assert type(obj.is_tesla_home()) is bool
     assert obj.is_tesla_home() is False
+    tesla_db['tesla_location'].update_one({"_id": "current"}, {"$set": {"is_home": True}})
