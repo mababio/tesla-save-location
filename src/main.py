@@ -35,14 +35,14 @@ def save_location(lat, lon):
             logger.info('save_location: Current lat lon values are the same as mongodb values')
             if tesla_stationary_obj.is_tesla_parked_long() and not tesla_stationary_obj.is_climate_turned_on_via_automation() \
                     and not tesla_stationary_obj.climate_turned_on_via_automation_before() \
-                    and tesla_stationary_obj.get_db_latlon_age() < settings['production']['max_parked_min']:
+                    and tesla_stationary_obj.get_db_latlon_age() < settings['production']['max_parked_min']\
+                    and not tesla_stationary_obj.is_tesla_home():
                 logger.info('Cloud function that absorbed pubsub:::: calling set_temp')
                 tesla_stationary_obj.set_temp()
             elif tesla_stationary_obj.is_climate_turned_on_via_automation() \
                     and tesla_stationary_obj.get_db_latlon_age() > settings['production']['max_parked_min']:
                 try:
                     tesla_stationary_obj.set_climate_off()
-                    tesla_stationary_obj.climate_turned_off_via_automation()
                     notification.send_push_notification('Attempting to turn climate off')
                 except Exception as e:
                     notification.send_push_notification('set_climate_off::::: Issue turning off climate after tesla'

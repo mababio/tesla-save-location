@@ -1,5 +1,5 @@
 from retry import retry
-from logs import logger
+from src.logs import logger
 from urllib import request, parse
 
 

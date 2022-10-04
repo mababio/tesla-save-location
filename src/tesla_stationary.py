@@ -2,9 +2,9 @@ from datetime import datetime
 from pytz import timezone
 from retry import retry
 import requests
-from logs import logger
-import notification
-from config import settings
+from src.logs import logger
+import src.notification as notification
+from src.config import settings
 import math
 
 
@@ -25,7 +25,9 @@ class TeslaStationary:
         return requests.get(self.url_tesla_info).json()['climate_state']['outside_temp']
 
     def set_climate_off(self):
-        return requests.get(self.url_tesla_climate_off).json()['set'] == 'True'
+        return_val = requests.get(self.url_tesla_climate_off).json()['set'] == 'True'
+        self.climate_turned_off_via_automation()
+        return return_val
 
     def __fahrenheit_to_celsius(self, fahrenheit):
         return (fahrenheit - 32) * 5.0 / 9.0
@@ -43,7 +45,7 @@ class TeslaStationary:
             return None
 
     def is_climate_turned_on_via_automation(self):
-        climate_state = self.db['tesla_climate_status'].find_one({'_id':'enum'})['climate_state']
+        climate_state = self.db['tesla_climate_status'].find_one({'_id': 'enum'})['climate_state']
         return True if climate_state == 'climate_automation' else False
 
     def climate_turned_off_via_automation(self):
@@ -52,26 +54,22 @@ class TeslaStationary:
         self.db['tesla_climate_status'].update_one(myquery, new_values)
 
     def climate_turned_on_via_automation_before(self):
-        climate_turned_on_before = self.db['tesla_climate_status'].find_one({'_id':'enum'})['climate_turned_on_before']
+        climate_turned_on_before = self.db['tesla_climate_status'].find_one({'_id': 'enum'})['climate_turned_on_before']
         return True if climate_turned_on_before == 'True' else False
 
     def climate_reset_for_automation(self):
         myquery = {"_id": 'enum'}
-        new_values = {"$set": {"climate_state": 'at_user_well'}}
-        self.db['tesla_climate_status'].update_one(myquery, new_values)
-        myquery = {"_id": 'enum'}
-        new_values = {"$set": {"climate_turned_on_before": 'False'}}
-        self.db['tesla_climate_status'].update_one(myquery, new_values)
+        new_values_state = {"$set": {"climate_state": 'at_user_well'}}
+        new_values_turn_before = {"$set": {"climate_turned_on_before": 'False'}}
+        self.db['tesla_climate_status'].update_one(myquery, new_values_state)
+        self.db['tesla_climate_status'].update_one(myquery, new_values_turn_before)
 
     def climate_turned_on_via_automation(self):
         myquery = {"_id": 'enum'}
-        new_values = {"$set": {"climate_state": 'climate_automation'}}
-        self.db['tesla_climate_status'].update_one(myquery, new_values)
-        myquery = {"_id": 'enum'}
-        new_values = {"$set": {"climate_turned_on_before": 'True'}}
-        self.db['tesla_climate_status'].update_one(myquery, new_values)
-
-
+        new_values_state = {"$set": {"climate_state": 'climate_automation'}}
+        new_values_turn_before = {"$set": {"climate_turned_on_before": 'True'}}
+        self.db['tesla_climate_status'].update_one(myquery, new_values_state)
+        self.db['tesla_climate_status'].update_one(myquery, new_values_turn_before)
 
     @retry(logger=logger, delay=10, tries=3)
     def set_temp(self, temp=None):
@@ -116,8 +114,8 @@ class TeslaStationary:
     @retry(logger=logger, delay=10, tries=3)
     def is_parked(self, length=settings['production']['min_parked_min']):
         shift_state = requests.get(self.url_tesla_info).json()['drive_state']['shift_state']
-        db_latlon_age_mins = self.get_db_latlon_age()
-        return True if shift_state is None and db_latlon_age_mins > length else False
+        db_latlon_age_minutes = self.get_db_latlon_age()
+        return True if shift_state is None and db_latlon_age_minutes > length else False
 
     def get_db_latlon_age(self):
         est = timezone('US/Eastern')
@@ -127,29 +125,34 @@ class TeslaStationary:
 
         current_timestamp_est_datetime_obj = datetime.now(est)
         current_timestamp_est_datetime_obj_formatted = str(current_timestamp_est_datetime_obj).split('.')[0]
-        accepted_current_timestamp_est_datetime_obj = datetime.strptime(current_timestamp_est_datetime_obj_formatted, "%Y-%m-%d %H:%M:%S")
+        accepted_current_timestamp_est_datetime_obj = datetime.strptime(current_timestamp_est_datetime_obj_formatted,
+                                                                        "%Y-%m-%d %H:%M:%S")
 
         timelapse = accepted_current_timestamp_est_datetime_obj - db_latlon_timestamp_datetime_obj
-        return int(timelapse.total_seconds()/60) # this is in mins
+        return int(timelapse.total_seconds()/60)  # this is in minutes
 
     def is_tesla_parked_long(self):
-        if not self.is_in_service() and self.is_battery_good() and self.is_parked(): #and self.is_on_home_street
+        if not self.is_in_service() and self.is_battery_good() and self.is_parked():  # and self.is_on_home_street
             return True
         else:
             return False
 
+    def is_tesla_home(self):
+        return self.db['tesla_location'].find_one({'_id': 'current'})['is_home']
 
 
 if __name__ == "__main__":
     import pymongo
     from pymongo.server_api import ServerApi
-REMOVED    tesla_database = client['tesla']
-    obj = TeslaStationary(tesla_database)
-    print(obj.ideal_tesla_temp())
-   # obj.set_temp(75)
-   # print(obj.is_climate_on())
-   #  print(obj.get_db_latlon_age())
+REMOVED
+        server_api=ServerApi('1'))
+    tesla_db = client['tesla']
+    obj = TeslaStationary(tesla_db)
+    print(obj.get_climate_outside())
+    # obj.set_temp(75)
+    # print(obj.is_climate_on())
+    #  print(obj.get_db_latlon_age())
     # print(obj.is_tesla_parked_long())
     # print(obj.is_climate_turned_on_via_automation())
-   # print(settings['production']['max_parked_min'])
+    # print(settings['production']['max_parked_min'])
 
