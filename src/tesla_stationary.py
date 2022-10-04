@@ -2,9 +2,9 @@ from datetime import datetime
 from pytz import timezone
 from retry import retry
 import requests
-from src.logs import logger
-import src.notification as notification
-from src.config import settings
+from logs import logger
+import notification as notification
+from config import settings
 import math
 
 
