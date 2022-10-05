@@ -142,17 +142,5 @@ class TeslaStationary:
 
 
 if __name__ == "__main__":
-    import pymongo
-    from pymongo.server_api import ServerApi
-REMOVED
-        server_api=ServerApi('1'))
-    tesla_db = client['tesla']
-    obj = TeslaStationary(tesla_db)
-    print(obj.get_climate_outside())
-    # obj.set_temp(75)
-    # print(obj.is_climate_on())
-    #  print(obj.get_db_latlon_age())
-    # print(obj.is_tesla_parked_long())
-    # print(obj.is_climate_turned_on_via_automation())
-    # print(settings['production']['max_parked_min'])
+    print('')
 

@@ -6,7 +6,8 @@ from pymongo.server_api import ServerApi
 from src.tesla_stationary import TeslaStationary
 from src.config import settings
 
-client = pymongo.MongoClient(settings['URL']['mongodb'], server_api=ServerApi('1'))
+client = pymongo.MongoClient(settings['URL']['mongodb'], username=settings['db_username'],
+                             password=settings['db_password'], server_api=ServerApi('1'))
 tesla_db = client['tesla']
 obj = TeslaStationary(tesla_db)
 

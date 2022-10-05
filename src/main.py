@@ -12,6 +12,7 @@ from config import settings
 
 def get_db_client():
 REMOVED
+                                 password=settings['db_password'], server_api=ServerApi('1'))
     return client['tesla']
 
 
