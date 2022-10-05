@@ -68,6 +68,8 @@ def hello_pubsub(event, context):
         pubsub_message = base64.b64decode(event['data']).decode('utf-8')
         lat = json.loads(pubsub_message)['lat']
         lon = json.loads(pubsub_message)['lon']
+        lat = float(lat)
+        lon = float(lon)
         save_location(lat, lon)
         logger.info("hello_pubsub::::: Attempting to save lat lon to mongodb " + str(lat) + str(lon))
     except Exception as e:
