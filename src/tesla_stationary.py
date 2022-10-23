@@ -11,9 +11,8 @@ import math
 class TeslaStationary:
 
     def __init__(self, tesla_database):
-        self.url_tesla_set_temp = settings['production']['URL']['tesla_set_temp']
+        self.url_tesla_control = settings['production']['URL']['tesla_control']
         self.url_tesla_info = settings['production']['URL']['tesla_info']
-        self.url_tesla_climate_off = settings['production']['URL']['tesla_climate_off']
         self.db = tesla_database
 
     @retry(logger=logger, delay=10, tries=3)
@@ -25,9 +24,9 @@ class TeslaStationary:
         return requests.get(self.url_tesla_info).json()['climate_state']['outside_temp']
 
     def set_climate_off(self):
-        return_val = requests.get(self.url_tesla_climate_off).json()['set'] == 'True'
+        requests.get(self.url_tesla_control, json={'command': 'TURN_OFF_CLIMATE'})
         self.climate_turned_off_via_automation()
-        return return_val
+        return True
 
     def __fahrenheit_to_celsius(self, fahrenheit):
         return (fahrenheit - 32) * 5.0 / 9.0
@@ -82,14 +81,15 @@ class TeslaStationary:
         else:
             if not self.is_climate_on():
                 try:
-                    param = {"temp": temp}
+                    #param = {"temp": temp}
+                    param = {'command': 'SET_TEMP', 'args': {"temp": float(temp)}}
                     notification.send_push_notification('set_temp:::: calling set_temp cloud function')
-                    requests.post(self.url_tesla_set_temp, json=param)
+                    requests.post(self.url_tesla_control, json=param)
                     notification.send_push_notification('Turned air on')
                     self.climate_turned_on_via_automation()
                     return True
                 except Exception as e:
-                    logger.warning('set_temp::::: Issue calling ' + str(self.url_tesla_set_temp) + ': ' + str(e))
+                    logger.warning('set_temp::::: Issue calling ' + str(self.url_tesla_control) + ': ' + str(e))
                     raise
             else:
                 notification.send_push_notification('Climate is on already, no need to turn on')
