@@ -81,8 +81,8 @@ class TeslaStationary:
         else:
             if not self.is_climate_on():
                 try:
-                    #param = {"temp": temp}
-                    param = {'command': 'SET_TEMP', 'args': {"temp": float(temp)}}
+                    # param = {"temp": temp}
+                    param = {'command': 'SET_TEMP', 'args': {'temp': float(temp)}}
                     notification.send_push_notification('set_temp:::: calling set_temp cloud function')
                     requests.post(self.url_tesla_control, json=param)
                     notification.send_push_notification('Turned air on')
