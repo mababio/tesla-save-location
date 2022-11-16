@@ -11,7 +11,7 @@ from config import settings
 
 
 def get_db_client():
-REMOVED
+    client = pymongo.MongoClient(settings['URL']['mongodb'], username=settings['db_username'],
                                  password=settings['db_password'], server_api=ServerApi('1'))
     return client['tesla']
 
