@@ -11,9 +11,9 @@ from config import settings
 
 
 def get_db_client():
-    client = pymongo.MongoClient(settings['production']['database']['mongodb']['mongo_client_url'],
-                                 username=settings['production']['database']['mongodb']['username'],
-                                 password=settings['production']['database']['mongodb']['password'], server_api=ServerApi('1'))
+    client = pymongo.MongoClient(settings['production']['database']['mongo']['mongo_client_url'],
+                                 username=settings['production']['database']['mongo']['username'],
+                                 password=settings['production']['database']['mongo']['password'], server_api=ServerApi('1'))
     return client['tesla']
 
 
