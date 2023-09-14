@@ -6,7 +6,7 @@ steps:
   - deploy
   - function-tesla-save-location
   - --region=us-east4
-  - --service-account=service-account-wyze-function@ensure-dev-zone.iam.gserviceaccount.com
+  - --service-account=tesla-sc-get-location@tesla-automation-397321.iam.gserviceaccount.com
   - --entry-point=hello_pubsub
   - --source=src
   - --trigger-topic=tesla-gps-save-mongodb
