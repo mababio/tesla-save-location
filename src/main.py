@@ -11,8 +11,9 @@ from config import settings
 
 
 def get_db_client():
-    client = pymongo.MongoClient(settings['URL']['mongodb'], username=settings['db_username'],
-                                 password=settings['db_password'], server_api=ServerApi('1'))
+    client = pymongo.MongoClient(settings['production']['database']['mongodb']['mongo_client_url'],
+                                 username=settings['production']['database']['mongodb']['username'],
+                                 password=settings['production']['database']['mongodb']['password'], server_api=ServerApi('1'))
     return client['tesla']
 
 
@@ -36,7 +37,7 @@ def save_location(lat, lon):
             logger.info('save_location: Current lat lon values are the same as mongodb values')
             if tesla_stationary_obj.is_tesla_parked_long() and not tesla_stationary_obj.is_climate_turned_on_via_automation() \
                     and not tesla_stationary_obj.climate_turned_on_via_automation_before() \
-                    and tesla_stationary_obj.get_db_latlon_age() < settings['production']['max_parked_min']\
+                    and tesla_stationary_obj.get_db_latlon_age() < settings['production']['max_parked_min'] \
                     and not tesla_stationary_obj.is_tesla_home():
                 logger.info('Cloud function that absorbed pubsub:::: calling set_temp')
                 tesla_stationary_obj.set_temp()
