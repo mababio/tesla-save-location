@@ -5,7 +5,7 @@ steps:
 
   - name: python
     entrypoint: python
-    args: [ "secret_manager.py", download ,"src/settings.toml", tap_settings_files, $PROJECT_NUMBER ]
+    args: [ "gcp/secret_manager.py", download ,"gcp/src/settings.toml", tap_settings_files, $PROJECT_NUMBER ]
     id: load_settings_toml
 
 
