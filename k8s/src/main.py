@@ -3,7 +3,6 @@ from logs import logger
 import redis
 import os
 import json
-# import notification
 
 TESLA_DATA_SERVICES_BASE_URL = os.environ.get('TESLA_DATA_SERVICES_BASE_URL')
 
